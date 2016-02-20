@@ -16,20 +16,21 @@ def read_input_seqs(input_fname):
 
     return input_seqs
 
-def remove_substrings(input_seqs):
-    """Remove subsequences that are wholly contained in another subsequence."""
-    numSeqs = len(input_seqs)
-    input_list = input_seqs[:]
+# Not necessary because find_scs() covers this.
+# def remove_substrings(input_seqs):
+#     """Remove subsequences that are wholly contained in another subsequence."""
+#     numSeqs = len(input_seqs)
+#     input_list = input_seqs[:]
 
-    for i in range(numSeqs):
-        for j in range(i + 1, numSeqs):
-            if input_seqs[i] in input_seqs[j]:
-                if verbose:
-                    print "> Removing '%s' which is contained in '%s'." \
-                          % (input_seqs[i], input_seqs[j])
-                input_list.remove(input_seqs[i])
+#     for i in range(numSeqs):
+#         for j in range(i + 1, numSeqs):
+#             if input_seqs[i] in input_seqs[j]:
+#                 if verbose:
+#                     print "> Removing '%s' which is contained in '%s'." \
+#                           % (input_seqs[i], input_seqs[j])
+#                 input_list.remove(input_seqs[i])
 
-    return input_list
+#     return input_list
 
 def find_scs(input_seqs):
     """Returns the shortest common supersequence composed of the subsequences
@@ -95,5 +96,6 @@ def merge_seqs(seqA, seqB, common):
     return seqA[:overlap_start_idx] + seqB + seqA[overlap_start_idx + len(common):]
 
 fname = sys.argv[1]
-input_seqs = remove_substrings(read_input_seqs(fname))
+# input_seqs = remove_substrings(read_input_seqs(fname))
+input_seqs = read_input_seqs(fname)
 print(find_scs(input_seqs))
