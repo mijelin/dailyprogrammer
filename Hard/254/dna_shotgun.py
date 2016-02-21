@@ -16,21 +16,20 @@ def read_input_seqs(input_fname):
 
     return input_seqs
 
-# Not necessary because find_scs() covers this.
-# def remove_substrings(input_seqs):
-#     """Remove subsequences that are wholly contained in another subsequence."""
-#     numSeqs = len(input_seqs)
-#     input_list = input_seqs[:]
+def remove_substrings(input_seqs):
+    """Remove subsequences that are wholly contained in another subsequence."""
+    numSeqs = len(input_seqs)
+    input_list = input_seqs[:]
 
-#     for i in range(numSeqs):
-#         for j in range(i + 1, numSeqs):
-#             if input_seqs[i] in input_seqs[j]:
-#                 if verbose:
-#                     print "> Removing '%s' which is contained in '%s'." \
-#                           % (input_seqs[i], input_seqs[j])
-#                 input_list.remove(input_seqs[i])
+    for i in range(numSeqs):
+        for j in range(i + 1, numSeqs):
+            if input_seqs[i] in input_seqs[j]:
+                if verbose:
+                    print "> Removing '%s' which is contained in '%s'." \
+                          % (input_seqs[i], input_seqs[j])
+                input_list.remove(input_seqs[i])
 
-#     return input_list
+    return input_list
 
 def find_scs(input_seqs):
     """Returns the shortest common supersequence composed of the subsequences
@@ -53,36 +52,58 @@ def find_scs(input_seqs):
                 print "\n> Current shortest common supersequence:", scs
                 print "> Comparing with:", seq
 
-            for i in range(len(seq)):
-                for j in range(len(scs)):
+            if verbose:
+                print "\n> Prepend"
 
-                    if seq[i] != scs[j]:
-                        continue
+            # Try prepending seq to scs
+            prepend_overlap = find_overlap(seq, scs, True)
 
-                    overlap = ""
-                    length = 0
+            if verbose:
+                print "> Prepend '%s' to '%s': %s" % (seq, scs, prepend_overlap)
 
-                    while seq[i + length] == scs[j + length]:
-                        overlap += seq[i + length]
-                        length += 1
+            if len(prepend_overlap) > len(longest_overlap):
+                longest_overlap = prepend_overlap
+                next_to_merge = seq
 
-                        if (i + length) >= len(seq) or \
-                           (j + length) >= len(scs): break
+            if verbose:
+                print "\n> Append"
 
-                    if verbose:
-                        print "> Overlap is:", overlap
+            # Try appending seq to scs
+            append_overlap = find_overlap(scs, seq, False)
 
-                    if len(overlap) > len(longest_overlap):
-                        longest_overlap = overlap
-                        next_to_merge = seq
+            if verbose:
+                print "> Append '%s' to '%s': %s" % (seq, scs, append_overlap)
 
-                        if verbose:
-                            print "> Longest overlap is now:", longest_overlap
+            if len(append_overlap) > len(longest_overlap):
+                longest_overlap = append_overlap
+                next_to_merge = seq
 
+        if next_to_merge == "": next_to_merge = seq
         scs = merge_seqs(scs, next_to_merge, longest_overlap)
         input_seqs.remove(next_to_merge)
 
     return scs
+
+def find_overlap(seqA, seqB, prepend):
+    """Finds the overlapping substring between SEQA and SEQB.
+
+    If PREPEND = True, tries to prepend seqA to seqB. Otherwise, tries to
+    append seqB to seqA.
+    """
+    if prepend:
+        seqB = seqB[:len(seqA)]
+    else:
+        seqA = seqA[-len(seqB):]
+
+    if verbose:
+        print "%s\n%s\n" % (seqB, seqA)
+
+    if prepend:
+        if seqA == "" or seqA == seqB: return seqA
+    else:
+        if seqB == "" or seqB == seqA: return seqB
+
+    return find_overlap(seqA[1:], seqB[:-1], prepend)
 
 def merge_seqs(seqA, seqB, common):
     """Merge subsequences SEQA and SEQB together, where len(seqA) >= len(seqB),
@@ -92,10 +113,12 @@ def merge_seqs(seqA, seqB, common):
         print "\n> Merging '%s' and '%s', which have '%s' in common." \
               % (seqA, seqB, common)
 
+    if common == "":
+        return seqA + seqB
+
     overlap_start_idx = seqA.find(common)
     return seqA[:overlap_start_idx] + seqB + seqA[overlap_start_idx + len(common):]
 
 fname = sys.argv[1]
-# input_seqs = remove_substrings(read_input_seqs(fname))
-input_seqs = read_input_seqs(fname)
+input_seqs = remove_substrings(read_input_seqs(fname))
 print(find_scs(input_seqs))
